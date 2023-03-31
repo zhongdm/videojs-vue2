@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <VideoPlayerVue :autoplay="true" :controls="false" custom-controls :options="{}" :url="require('./assets/video.webm')" style="width: 700px;height: 300px;"></VideoPlayerVue>
+    <VideoPlayerVue :autoplay="false" :controls="false" screenshot video-record custom-controls :options="{}" :url="require('./assets/video.webm')" style="width: 700px;height: 300px;"></VideoPlayerVue>
   </div>
 </template>
 

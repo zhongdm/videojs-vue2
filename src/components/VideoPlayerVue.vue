@@ -30,14 +30,27 @@
           </div>
         </div>
         <div class="other-bar">
-          <div class="time-container">
-          <span class="current-time">{{format(currentTime)}}</span>
-          <span class="all-time">{{format(allTime)}}</span>
+          <div class="bar-left">
+            <div class="time-container">
+            <span class="current-time">{{format(currentTime)}}</span>
+            <span class="all-time">{{format(allTime)}}</span>
+            </div>
+            <span class="icon-span video-voice" 
+              :style="{backgroundImage: 'url('+require('../assets/icon/'+ volumeIcon) + ')'}"
+              @click="onvolumetoggle">
+            </span>
           </div>
-          <span class="video-voice" 
-            :style="{backgroundImage: 'url('+require('../assets/icon/'+ volumeIcon) + ')'}"
-            @click="onvolumetoggle">
-          </span>
+          <div class="bar-right">
+            <span v-if="screenshot" class="icon-span video-screenshot" title="截屏"
+              :style="{backgroundImage: 'url('+require('../assets/icon/camera.svg') + ')'}"
+              @click="onscreenshot">
+            </span>
+            <span v-if="videoRecord" class="icon-span video-recording" title="录屏"
+              :style="{backgroundImage: 'url('+require('../assets/icon/recording-sharp.svg') + ')'}"
+              @click="onrecording">
+            </span>
+          </div>
+          <canvas ref="canvas" v-show="false"></canvas>
         </div>
       </div>
     </div>
@@ -79,7 +92,9 @@ export default {
       type: [Boolean, null, undefined],
       default: false
     },
-    options: Object
+    options: Object,
+    screenshot: Boolean,
+    videoRecord: Boolean,
   },
   data() {
     return {
@@ -88,7 +103,9 @@ export default {
       clickedPoint: false,
       currentTime: 0,
       allTime: 0,
-      volumeIcon: 'play.svg'
+      volumeIcon: 'volume_close.svg',
+      mediaRecorder: null,
+      recording: false
     }
   },
   computed: {
@@ -118,11 +135,17 @@ export default {
     onvolumechange(args) {
     },
     onloadeddata(args) {
+      const player = args.target;
+      this.toggleVolume(player)
+      this.allTime = args.target.duration
     },
     onloadedmetadata(args) {
       const player = args.target;
       this.toggleVolume(player)
       this.allTime = args.target.duration
+      if (this.videoRecord) {
+        this.loadRecorder()
+      }
     },
     onplay(args) {
       this.bgAvatar = 'pause.svg';
@@ -150,6 +173,52 @@ export default {
     toggleVolume(player) {
       player.muted = player.volume === 0 ? true : false
       this.volumeIcon = player.volume === 0 ? 'volume_close.svg' : 'volume.svg'
+    },
+    onscreenshot(args) {
+      const video = this.$refs.player
+      const vWidth = video.clientWidth
+      const vHeight = video .clientHeight;
+
+      const canvas = this.$refs.canvas
+      canvas.width = vWidth
+      canvas.height = vHeight
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(video, 0, 0, vWidth, vHeight)
+
+      const imgUrl = canvas.toDataURL('image/png')
+      this.downloadImage(imgUrl, 'screenshot.png')
+    },
+    downloadImage(imgUrl, filename) {
+      const link = document.createElement('a')
+      link.href = imgUrl
+      link.download = filename
+      link.click()
+      window.URL.revokeObjectURL(link.href)
+    },
+    onrecording() {
+      this.recording = !this.recording
+      if (this.recording) {
+        console.log('开始录制')
+        this.mediaRecorder.start(1000)
+      } else {
+        console.log('结束录制')
+        this.mediaRecorder.stop()
+      }
+    },
+    loadRecorder() {
+      const video = this.$refs.player
+      const videoData = []
+      this.mediaRecorder = new MediaRecorder(video.captureStream(25))
+
+      this.mediaRecorder.ondataavailable = (e) => {
+        videoData.push(e.data)
+      }
+
+      this.mediaRecorder.onstop = (e) => {
+        const blob = new Blob(videoData, { type: 'video/webm;codecs=vp8,opus'})
+        const videoUrl = window.URL.createObjectURL(blob)
+        this.downloadImage(videoUrl, '录屏.webm')
+      }
     },
     btnClick(evt) {
       const player = this.$refs.player;
@@ -331,18 +400,33 @@ export default {
 .video-controls:hover .other-bar {
   position: absolute;
   display: flex;
+  justify-content: space-between;
   gap: 1rem;
-  bottom: 20%;
+  bottom: 10%;
   left: 2%;
   font-size: .8rem;
+}
+.other-bar .bar-left,
+.other-bar .bar-right {
+  display: flex;
+  gap: 1rem;
 }
 .other-bar .time-container {
   color: #fff;
 }
-.video-voice {
+.icon-span {
   display: inline-block;
   width: 20px;
   height: 20px;
   background-size: contain;
+}
+.icon-span {
+  cursor: pointer;
+}
+.video-voice {
+  /* display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-size: contain; */
 }
 </style>

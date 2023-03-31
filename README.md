@@ -36,4 +36,7 @@ https://www.npmjs.com/
 + disablepictureinpicture: Boolean
 + poster
 + customControls: Boolean - controls为false的时候生效，自定义进度条和样式等
-+ options - customControls为true的时候的参数配置
+- 以下是customControls为true的时候生效的属性
+  + options - 参数配置
+  + screenshot - 截图功能
+  + videoRecord - 录屏功能
