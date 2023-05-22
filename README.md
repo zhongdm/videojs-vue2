@@ -6,7 +6,7 @@
 ``` bash
 npm run build
 
-npm public --access public
+npm publish --access public
 
 ```
 ## Build Setup
@@ -24,7 +24,6 @@ npm run dev
 # build for production with minification
 npm run build
 ```
-https://www.npmjs.com/
 
 ### Options
 + url - video的路径

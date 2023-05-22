@@ -32,7 +32,7 @@
         <div class="other-bar">
           <div class="bar-left">
             <div class="time-container">
-            <span class="current-time">{{format(currentTime)}}</span>
+            <span class="current-time">{{format(currentTime)}}</span>&nbsp;/
             <span class="all-time">{{format(allTime)}}</span>
             </div>
             <span class="icon-span video-voice" 
